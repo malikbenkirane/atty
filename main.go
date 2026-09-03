@@ -47,6 +47,8 @@ func run() error {
 
 	}
 
+	m.filtering = true
+
 	p := tea.NewProgram(m)
 
 	_, err := p.Run()
