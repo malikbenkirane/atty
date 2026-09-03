@@ -158,7 +158,9 @@ func (m *model) clampCursor() {
 
 	var found bool
 	for _, i := range m.visibleRows() {
-		found = i == m.cursor
+		if found = i == m.cursor; found {
+			break
+		}
 	}
 
 	if !found && len(v) > 0 {
