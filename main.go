@@ -144,23 +144,33 @@ func (m model) updateFilter(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 func (m model) View() tea.View {
+
 	b := new(strings.Builder)
+
 	v := m.visibleRows()
 	for _, i := range v {
+
 		if m.cursor == i {
 			fmt.Fprint(b, "> ")
 		} else {
 			fmt.Fprint(b, "  ")
 		}
+
 		fmt.Fprintln(b, m.windows[i])
+
 	}
 	if len(v) == 0 {
 		fmt.Fprintln(b, "No matching result")
 	}
+
+	fmt.Fprintln(b)
+
 	if !m.filtering {
 		fmt.Fprintln(b, "/ filter  q quit")
 	} else {
 		fmt.Fprintf(b, "filter: %q  enter select  esc cancel", m.filterText)
 	}
+
 	return tea.NewView(b.String())
+
 }
