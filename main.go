@@ -43,7 +43,9 @@ func run() error {
 		return fmt.Errorf("randomHex: %w", err)
 	}
 
-	setTitle("atty-" + title)
+	title = "atty-" + title
+
+	setTitle(title)
 
 	var m model
 
@@ -62,15 +64,23 @@ func run() error {
 		m.windows = strings.Split(buf.String(), ", ")
 		slices.Sort(m.windows)
 
-		self := 0
+		var clear []int
+
 		for i := range m.windows {
 			if m.windows[i] == title {
-				self = i
+				clear = append(clear, i)
 			}
 			m.windows[i] = strings.TrimSpace(m.windows[i])
+			if len(m.windows[i]) == 0 {
+				clear = append(clear, i)
+			}
 		}
-		if len(m.windows) > self {
-			m.windows = append(m.windows[:self], m.windows[self+1:]...)
+		k := 0
+		for _, i := range clear {
+			if i < len(m.windows) {
+				m.windows = append(m.windows[:i-k], m.windows[i-k+1:]...)
+				k++
+			}
 		}
 
 	}
@@ -287,7 +297,7 @@ func (m model) View() tea.View {
 }
 
 func randomHex() (string, error) {
-	b := make([]byte, 32)
+	b := make([]byte, 8)
 	if _, err := rand.Read(b); err != nil {
 		return "", fmt.Errorf("rand: read: %w", err)
 	}
