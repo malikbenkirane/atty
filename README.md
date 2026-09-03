@@ -7,7 +7,7 @@ TUI window switcher for Alacritty on macOS. List, search, and raise Alacritty wi
 - **List Alacritty windows**: View all open terminal tabs/named panes
 - **Keyboard navigation**: Use `j`/`k` or `↑`/`↓` to navigate
 - **Filter windows**: Type `/` to enable filtering mode, type patterns separated by `/` for combined results
-- **Raise windows**: Press `enter` to bring the selected Alacritty window to the front
+- **Raise & switch**: Press `enter` to raise the selected window; the window `atty` was launched from is closed automatically
 - **Clean interface**: Minimal TUI built with bubbletea
 
 ## Installation
@@ -32,6 +32,7 @@ go install
 | `j` `↓` | Move cursor down |
 | `k` `↑` | Move cursor up |
 | `/` | Enable filter mode |
+| `space` | Combine filter terms (same as `/`) |
 | `enter` | Raise selected Alacritty window |
 | `esc` | Exit filter mode / cancel command |
 | `backspace` | Delete character in filter |
@@ -62,8 +63,11 @@ atty
 On macOS, `atty` uses AppleScript via `osascript` to:
 1. Retrieve the list of Alacritty window names
 2. Raise a window using the `AXRaise` accessibility action
+3. Close the window it was launched from via its close button
 
 The TUI is built with Bubbletea, providing a smooth interactive experience.
+
+`atty` tags its own Alacritty window with a random title, so it can hide itself from the list. When you raise another window, `atty` closes the window it was launched from (via its close button), so you land directly in the selected window.
 
 ## Requirements
 
