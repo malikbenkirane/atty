@@ -73,15 +73,37 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 func (m model) visibleRows() []int {
-	filterActive := m.filterText != ""
-	var rows []int
-	for i, title := range m.windows {
-		if filterActive && !strings.Contains(title, m.filterText) {
-			continue
-		}
-		rows = append(rows, i)
+
+	rows := make(map[int]bool)
+
+	for i := range len(m.windows) {
+		rows[i] = true
 	}
-	return rows
+
+	if m.filterText == "" {
+		visible := make([]int, len(m.windows))
+		for i := range len(m.windows) {
+			visible[i] = i
+		}
+		return visible
+	}
+
+	for s := range strings.SplitSeq(m.filterText, "/") {
+		for i, title := range m.windows {
+			rows[i] = rows[i] && strings.Contains(title, s)
+		}
+	}
+
+	var visible []int
+
+	for i, isVisible := range rows {
+		if isVisible {
+			visible = append(visible, i)
+		}
+	}
+
+	return visible
+
 }
 func (m *model) clampCursor() {
 
@@ -168,7 +190,13 @@ func (m model) View() tea.View {
 	if !m.filtering {
 		fmt.Fprintln(b, "/ filter  q quit")
 	} else {
-		fmt.Fprintf(b, "filter: %q  enter select  esc cancel", m.filterText)
+		fmt.Fprintf(b, "filter: ")
+		fields := strings.Split(m.filterText, "/")
+		for i, f := range fields {
+			fields[i] = fmt.Sprintf("%q", f)
+		}
+		fmt.Fprintf(b, strings.Join(fields, " and "))
+		fmt.Fprintln(b, "\nenter select  esc cancel  / combine", m.filterText)
 	}
 
 	return tea.NewView(b.String())
