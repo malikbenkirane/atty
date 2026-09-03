@@ -74,10 +74,17 @@ func run() error {
 
 	m.filtering = true
 
+	var done bool
+	m.done = &done
+
 	p := tea.NewProgram(m)
 
 	if _, err := p.Run(); err != nil {
 		return fmt.Errorf("tea: run: %w", err)
+	}
+
+	if !done {
+		return nil
 	}
 
 	cmd := exec.Command("osascript", "-e", fmt.Sprintf(closeScript, title))
@@ -95,6 +102,7 @@ type model struct {
 	cursor     int
 	filtering  bool
 	filterText string
+	done       *bool
 	err        error
 }
 
@@ -149,7 +157,6 @@ func (m *model) clampCursor() {
 	v := m.visibleRows()
 
 	var found bool
-
 	for _, i := range m.visibleRows() {
 		found = i == m.cursor
 	}
@@ -159,36 +166,50 @@ func (m *model) clampCursor() {
 	}
 
 }
+func (m model) updateCursorDown() (tea.Model, tea.Cmd) {
+	for _, i := range m.visibleRows() {
+		if i > m.cursor {
+			m.cursor = i
+			break
+		}
+	}
+	m.clampCursor()
+	return m, nil
+}
+func (m model) updateCursorUp() (tea.Model, tea.Cmd) {
+	v := m.visibleRows()
+	for i := len(v) - 1; i >= 0; i-- {
+		if i < m.cursor {
+			m.cursor = i
+			break
+		}
+	}
+	m.clampCursor()
+	return m, nil
+}
 func (m model) updateCursor(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch k.String() {
 	case "q", "ctrl+c", "esc":
 		return m, tea.Quit
-	case "j", "down":
-		for _, i := range m.visibleRows() {
-			if i > m.cursor {
-				m.cursor = i
-				break
-			}
-		}
-	case "k", "up":
-		v := m.visibleRows()
-		for i := len(v) - 1; i >= 0; i-- {
-			if i < m.cursor {
-				m.cursor = i
-				break
-			}
-		}
+	case "j", "down", "ctrl+p":
+		return m.updateCursorDown()
+	case "k", "up", "ctrl+n":
+		return m.updateCursorUp()
 	case "/":
 		m.filtering = true
 	case "enter":
-		cmd := exec.Command("osascript", "-e", fmt.Sprintf(raiseScript, m.windows[m.cursor]))
-		if err := cmd.Run(); err != nil {
-			m.err = fmt.Errorf("osascript: %w", err)
-			return m, nil
-		}
-		return m, tea.Quit
+		return m.raiseAndExit()
 	}
 	return m, nil
+}
+func (m model) raiseAndExit() (tea.Model, tea.Cmd) {
+	cmd := exec.Command("osascript", "-e", fmt.Sprintf(raiseScript, m.windows[m.cursor]))
+	if err := cmd.Run(); err != nil {
+		m.err = fmt.Errorf("osascript: %w", err)
+		return m, nil
+	}
+	*m.done = true
+	return m, tea.Quit
 }
 func (m model) updateFilter(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch s := k.String(); s {
@@ -196,8 +217,14 @@ func (m model) updateFilter(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		m.filtering = false
 		m.filterText = ""
 		m.cursor = 0
-	case "enter", "ctrl+c":
+	case "ctrl+c":
 		m.filtering = false
+	case "enter":
+		return m.raiseAndExit()
+	case "ctrl+n":
+		return m.updateCursorDown()
+	case "ctrl+p":
+		return m.updateCursorUp()
 	case "backspace":
 		if len(m.filterText) > 0 {
 			m.filterText = m.filterText[:len(m.filterText)-1]
