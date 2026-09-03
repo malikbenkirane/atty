@@ -36,6 +36,10 @@ func run() error {
 		}
 
 		m.windows = strings.Split(buf.String(), ", ")
+
+		for i, t := range m.windows {
+			m.windows[i] = strings.TrimSpace(t)
+		}
 	}
 
 	p := tea.NewProgram(m)
