@@ -193,9 +193,9 @@ func (m model) updateCursor(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch k.String() {
 	case "q", "ctrl+c", "esc":
 		return m, tea.Quit
-	case "j", "down", "ctrl+p":
+	case "j", "down", "ctrl+n":
 		return m.updateCursorDown()
-	case "k", "up", "ctrl+n":
+	case "k", "up", "ctrl+p":
 		return m.updateCursorUp()
 	case "/":
 		m.filtering = true
