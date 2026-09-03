@@ -274,7 +274,7 @@ func (m model) View() tea.View {
 			fields[i] = fmt.Sprintf("%q", f)
 		}
 		fmt.Fprintf(b, strings.Join(fields, " and "))
-		fmt.Fprintln(b, "\nenter select  esc cancel  / combine")
+		fmt.Fprintln(b, "\nenter select  esc or ctrl+c cancel  / or space combine filters")
 	}
 
 	return tea.NewView(b.String())
