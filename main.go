@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"os/exec"
@@ -22,9 +24,23 @@ func main() {
 const (
 	listScript  = `tell application "System Events" to get name of every window of process "Alacritty"`
 	raiseScript = `tell application "System Events" to tell process "Alacritty" to perform action "AXRaise" of (first window whose name contains %q)`
+	closeScript = `tell application "System Events"
+	    tell process "Alacritty"
+	        click (first button whose subrole is "AXCloseButton") of (first window whose name contains %q)
+	    end tell
+	end tell`
 )
 
 func run() error {
+
+	title, err := randomHex()
+	if err != nil {
+		return fmt.Errorf("randomHex: %w", err)
+	}
+
+	title = "atty-" + title
+
+	fmt.Printf("\033]0;%s\007", title)
 
 	var m model
 
@@ -43,8 +59,15 @@ func run() error {
 		m.windows = strings.Split(buf.String(), ", ")
 		slices.Sort(m.windows)
 
-		for i, t := range m.windows {
-			m.windows[i] = strings.TrimSpace(t)
+		self := 0
+		for i := range m.windows {
+			if m.windows[i] == title {
+				self = i
+			}
+			m.windows[i] = strings.TrimSpace(m.windows[i])
+		}
+		if len(m.windows) > self {
+			m.windows = append(m.windows[:self], m.windows[self+1:]...)
 		}
 
 	}
@@ -53,9 +76,15 @@ func run() error {
 
 	p := tea.NewProgram(m)
 
-	_, err := p.Run()
-	if err != nil {
+	if _, err := p.Run(); err != nil {
 		return fmt.Errorf("tea: run: %w", err)
+	}
+
+	cmd := exec.Command("osascript", "-e", fmt.Sprintf(closeScript, title))
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("osascript: run close script: %w", err)
 	}
 
 	return nil
@@ -219,4 +248,12 @@ func (m model) View() tea.View {
 
 	return tea.NewView(b.String())
 
+}
+
+func randomHex() (string, error) {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return "", fmt.Errorf("rand: read: %w", err)
+	}
+	return hex.EncodeToString(b), nil
 }
