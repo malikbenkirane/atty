@@ -29,14 +29,18 @@ go install
 
 | Key | Action |
 |-----|--------|
-| `j` `↓` | Move cursor down |
-| `k` `↑` | Move cursor up |
+| `j` `↓` `ctrl+n` | Move cursor down |
+| `k` `↑` `ctrl+p` | Move cursor up |
 | `/` | Enable filter mode |
 | `space` | Combine filter terms (same as `/`) |
 | `enter` | Raise selected Alacritty window |
-| `esc` | Exit filter mode / cancel command |
+| `esc` | Quit; exit filter mode / cancel filter when filtering |
 | `backspace` | Delete character in filter |
-| `q` `Ctrl+C` | Quit |
+| `q` `Ctrl+C` | Quit (in filter mode, cancel filter) |
+
+`ctrl+n` moves down and `ctrl+p` moves up in all modes.
+
+`space` combines filter terms only while filtering; in navigation mode it has no effect.
 
 ## Usage Example
 
