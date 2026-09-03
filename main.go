@@ -161,7 +161,7 @@ func (m *model) clampCursor() {
 }
 func (m model) updateCursor(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch k.String() {
-	case "q", "ctrl+c":
+	case "q", "ctrl+c", "esc":
 		return m, tea.Quit
 	case "j", "down":
 		for _, i := range m.visibleRows() {
