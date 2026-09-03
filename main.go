@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/hex"
+	"flag"
 	"fmt"
 	"os"
 	"os/exec"
@@ -32,6 +33,10 @@ const (
 )
 
 func run() error {
+
+	noClose := flag.Bool("no-close", false, "do not close this window after rising selected window")
+
+	flag.Parse()
 
 	title, err := randomHex()
 	if err != nil {
@@ -81,7 +86,7 @@ func run() error {
 		return fmt.Errorf("tea: run: %w", err)
 	}
 
-	if !done {
+	if !done || *noClose {
 		dir, _ := os.Getwd()
 		setTitle(dir)
 		return nil
