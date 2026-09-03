@@ -223,9 +223,9 @@ func (m model) updateFilter(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		m.filtering = false
 	case "enter":
 		return m.raiseAndExit()
-	case "ctrl+n":
+	case "down", "ctrl+n":
 		return m.updateCursorDown()
-	case "ctrl+p":
+	case "up", "ctrl+p":
 		return m.updateCursorUp()
 	case "backspace":
 		if len(m.filterText) > 0 {
