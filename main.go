@@ -17,9 +17,13 @@ func main() {
 		os.Exit(1)
 	}
 }
-func run() error {
 
-	script := `tell application "System Events" to get name of every window of process "Alacritty"`
+const (
+	listScript  = `tell application "System Events" to get name of every window of process "Alacritty"`
+	raiseScript = `tell application "System Events" to tell process "Alacritty" to perform action "AXRaise" of (first window whose name contains %q)`
+)
+
+func run() error {
 
 	var m model
 
@@ -27,7 +31,7 @@ func run() error {
 
 		buf := new(bytes.Buffer)
 
-		cmd := exec.Command("osascript", "-e", script)
+		cmd := exec.Command("osascript", "-e", listScript)
 		cmd.Stderr = os.Stderr
 		cmd.Stdout = buf
 
@@ -40,6 +44,7 @@ func run() error {
 		for i, t := range m.windows {
 			m.windows[i] = strings.TrimSpace(t)
 		}
+
 	}
 
 	p := tea.NewProgram(m)
@@ -57,6 +62,7 @@ type model struct {
 	cursor     int
 	filtering  bool
 	filterText string
+	err        error
 }
 
 func (m model) Init() tea.Cmd {
@@ -140,6 +146,13 @@ func (m model) updateCursor(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		}
 	case "/":
 		m.filtering = true
+	case "enter":
+		cmd := exec.Command("osascript", "-e", fmt.Sprintf(raiseScript, m.windows[m.cursor]))
+		if err := cmd.Run(); err != nil {
+			m.err = fmt.Errorf("osascript: %w", err)
+			return m, nil
+		}
+		return m, tea.Quit
 	}
 	return m, nil
 }
