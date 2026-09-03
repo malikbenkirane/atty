@@ -38,9 +38,7 @@ func run() error {
 		return fmt.Errorf("randomHex: %w", err)
 	}
 
-	title = "atty-" + title
-
-	fmt.Printf("\033]0;%s\007", title)
+	setTitle("atty-" + title)
 
 	var m model
 
@@ -84,6 +82,8 @@ func run() error {
 	}
 
 	if !done {
+		dir, _ := os.Getwd()
+		setTitle(dir)
 		return nil
 	}
 
@@ -287,4 +287,8 @@ func randomHex() (string, error) {
 		return "", fmt.Errorf("rand: read: %w", err)
 	}
 	return hex.EncodeToString(b), nil
+}
+
+func setTitle(title string) {
+	fmt.Printf("\033]0;%s\007", title)
 }
