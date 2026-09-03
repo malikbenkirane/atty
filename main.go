@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"slices"
 	"strings"
 	"unicode"
 
@@ -40,6 +41,7 @@ func run() error {
 		}
 
 		m.windows = strings.Split(buf.String(), ", ")
+		slices.Sort(m.windows)
 
 		for i, t := range m.windows {
 			m.windows[i] = strings.TrimSpace(t)
@@ -82,10 +84,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 func (m model) visibleRows() []int {
 
-	rows := make(map[int]bool)
+	isVisible := make(map[int]bool)
 
 	for i := range len(m.windows) {
-		rows[i] = true
+		isVisible[i] = true
 	}
 
 	if m.filterText == "" {
@@ -98,14 +100,14 @@ func (m model) visibleRows() []int {
 
 	for s := range strings.SplitSeq(m.filterText, "/") {
 		for i, title := range m.windows {
-			rows[i] = rows[i] && strings.Contains(title, s)
+			isVisible[i] = isVisible[i] && strings.Contains(title, s)
 		}
 	}
 
 	var visible []int
 
-	for i, isVisible := range rows {
-		if isVisible {
+	for i := range len(isVisible) {
+		if isVisible[i] {
 			visible = append(visible, i)
 		}
 	}
@@ -126,6 +128,7 @@ func (m *model) clampCursor() {
 	if !found && len(v) > 0 {
 		m.cursor = v[0]
 	}
+
 }
 func (m model) updateCursor(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch k.String() {
