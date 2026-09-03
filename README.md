@@ -62,6 +62,29 @@ atty
 
 ![demo](demo.gif)
 
+## Configuration
+
+Add a keyboard shortcut to launch `atty` from Alacritty:
+
+Add this to your Alacritty configuration file (~/.config/alacritty/alacritty.toml):
+
+```toml
+[general]
+ipc_socket = true
+
+[keyboard]
+bindings = [
+  { key = "/", mods = "Command", command = {
+    program = "/Applications/Alacritty.app/Contents/MacOS/alacritty",
+    args = ["msg", "create-window", "-e", "/path/to/atty"] }
+  },
+]
+```
+
+**Notes:**
+- Enable `ipc_socket = true` in `[general]` - required for the `msg` command to work
+- Use an absolute path for the `atty` program (Alacritty doesn't expand tildes)
+
 ## How It Works
 
 On macOS, `atty` uses AppleScript via `osascript` to:
