@@ -203,6 +203,8 @@ func (m model) updateFilter(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			m.filterText = m.filterText[:len(m.filterText)-1]
 		}
 		m.clampCursor()
+	case "space":
+		m.filterText += "/"
 	default:
 		r := []rune(s)
 		if len(r) == 1 && unicode.IsPrint(r[0]) {
