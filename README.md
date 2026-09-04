@@ -64,7 +64,36 @@ atty
 
 ## Configuration
 
-Add a keyboard shortcut to launch `atty` from Alacritty:
+Set automatic window titles based on directory using shell hooks:
+
+### Bash
+
+Add to `~/.bashrc` or `~/.bash_profile`:
+
+```bash
+dl() {
+  # Your existing dl function here
+}
+dl -title $PWD
+```
+
+### Zsh
+
+Add to `~/.zshrc`:
+
+```zsh
+autoload -U add-zsh-hook
+
+title_hook() {
+  dl -title $PWD
+}
+
+add-zsh-hook precmd title_hook
+```
+
+Both shells support hooks (`precmd` in zsh and bash traps) to set titles automatically. We use zsh on macOS as it's the default shell recommended by Apple.
+
+### Alacritty
 
 Add this to your Alacritty configuration file (~/.config/alacritty/alacritty.toml):
 
