@@ -308,6 +308,9 @@ func (m model) View() tea.View {
 
 	b := new(strings.Builder)
 
+	fmt.Fprintln(b, banner)
+	fmt.Fprintln(b)
+
 	v := m.visibleRows()
 	for _, i := range v {
 
