@@ -2,8 +2,10 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -16,7 +18,7 @@ import (
 )
 
 func main() {
-	if err := run(); err != nil {
+	if err := run(context.Background()); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
@@ -32,11 +34,27 @@ const (
 	end tell`
 )
 
-func run() error {
+func run(ctx context.Context) (err error) {
 
-	noClose := flag.Bool("no-close", false, "do not close this window after rising selected window")
+	flagNoClose := flag.Bool("no-close", false, "do not close this window after rising selected window")
+	flagInfo := flag.Bool("info", false, "display info and exit")
 
 	flag.Parse()
+
+	var m model
+
+	m.history, err = initCache(ctx)
+	if err != nil {
+		return fmt.Errorf("init cache: %w", err)
+	}
+	defer func() {
+		err = errors.Join(err, m.history.Close())
+	}()
+
+	if *flagInfo {
+		fmt.Println("cache:", m.history.Path())
+		return nil
+	}
 
 	title, err := randomHex()
 	if err != nil {
@@ -46,8 +64,6 @@ func run() error {
 	title = "atty-" + title
 
 	setTitle(title)
-
-	var m model
 
 	{
 
@@ -96,7 +112,7 @@ func run() error {
 		return fmt.Errorf("tea: run: %w", err)
 	}
 
-	if !done || *noClose {
+	if !done || *flagNoClose {
 		dir, _ := os.Getwd()
 		setTitle(dir)
 		return nil
@@ -118,6 +134,7 @@ type model struct {
 	filtering  bool
 	filterText string
 	done       *bool
+	history    repo
 	err        error
 }
 
@@ -220,7 +237,12 @@ func (m model) updateCursor(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 func (m model) raiseAndExit() (tea.Model, tea.Cmd) {
-	cmd := exec.Command("osascript", "-e", fmt.Sprintf(raiseScript, m.windows[m.cursor]))
+	title := m.windows[m.cursor]
+	cmd := exec.Command("osascript", "-e", fmt.Sprintf(raiseScript, title))
+	if err := m.history.Log(title); err != nil {
+		m.err = fmt.Errorf("history: log: %w", err)
+		return m, nil
+	}
 	if err := cmd.Run(); err != nil {
 		m.err = fmt.Errorf("osascript: %w", err)
 		return m, nil
