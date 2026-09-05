@@ -2,6 +2,8 @@
 
 TUI window switcher for Alacritty on macOS. List, search, and raise Alacritty windows from the command line.
 
+![demo](demo.gif)
+
 ## Features
 
 - **List Alacritty windows**: View all open terminal tabs/named panes
@@ -71,8 +73,6 @@ atty
 
 # Press enter to select and type enter to bring that window to the foreground
 ```
-
-![demo](demo.gif)
 
 ## Configuration
 
