@@ -62,9 +62,12 @@ func initCache(ctx context.Context) (repo, error) {
 
 func (db *db) Log(title string) error {
 	unixTimestamp := time.Now().Unix()
-	db.Exec(`
+	_, err := db.Exec(`
 		INSERT INTO access_history (title, accessed_at) VALUES (?, ?)
 	`, title, unixTimestamp)
+	if err != nil {
+		return fmt.Errorf("sql: exec: %w", err)
+	}
 	return nil
 }
 
@@ -85,9 +88,11 @@ func (db *db) MostRecent(limit int) ([]titleAccess, error) {
 	accesses := make([]titleAccess, 0, limit)
 	for rows.Next() {
 		var ta titleAccess
-		if err := rows.Scan(&ta.title, &ta.accessedAt); err != nil {
+		var accessedAt int64
+		if err := rows.Scan(&ta.title, &accessedAt); err != nil {
 			return nil, fmt.Errorf("sql: scan row: %w", err)
 		}
+		ta.accessedAt = time.Unix(accessedAt, 0)
 		accesses = append(accesses, ta)
 	}
 	if err := rows.Err(); err != nil {
