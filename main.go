@@ -78,7 +78,6 @@ func run(ctx context.Context) (err error) {
 		}
 
 		m.windows = strings.Split(buf.String(), ", ")
-		slices.Sort(m.windows)
 
 		var clear []int
 
@@ -100,6 +99,31 @@ func run(ctx context.Context) (err error) {
 		}
 
 	}
+
+	recents, err := m.history.MostRecent(len(m.windows))
+	if err != nil {
+		return fmt.Errorf("history: most recent: %w", err)
+	}
+	rank := make(map[string]int, len(recents))
+	for r, ta := range recents {
+		if _, ok := rank[ta.title]; !ok {
+			rank[ta.title] = r
+		}
+	}
+	slices.SortFunc(m.windows, func(a, b string) int {
+		ra, okA := rank[a]
+		if !okA {
+			ra = len(recents)
+		}
+		rb, okB := rank[b]
+		if !okB {
+			rb = len(recents)
+		}
+		if ra != rb {
+			return ra - rb
+		}
+		return strings.Compare(a, b)
+	})
 
 	m.filtering = true
 
