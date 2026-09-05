@@ -6,8 +6,9 @@ TUI window switcher for Alacritty on macOS. List, search, and raise Alacritty wi
 
 - **List Alacritty windows**: View all open terminal tabs/named panes
 - **Keyboard navigation**: Use `j`/`k` or `↑`/`↓` to navigate
-- **Filter windows**: Type `/` to enable filtering mode, type patterns separated by `/` for combined results
-- **Raise & switch**: Press `enter` to raise the selected window; the window `atty` was launched from is closed automatically
+- **Filter windows**: Type patterns separated by `/` for combined results
+- **Raise & switch**: Press `enter` to raise the selected window; the window `atty` was launched from is closed automatically (disable with `-no-close`)
+- **Recency ordering**: Window selection history is stored in a local SQLite cache, and windows you used recently are listed first
 - **Clean interface**: Minimal TUI built with bubbletea
 
 ## Installation
@@ -25,20 +26,31 @@ Install:
 go install
 ```
 
+## CLI Flags
+
+| Flag | Effect |
+|------|--------|
+| `-no-close` | Keep the window `atty` was launched from open after raising the selected window |
+| `-info` | Print the SQLite cache location and exit without launching the TUI |
+
 ## Keyboard Shortcuts
+
+`atty` starts directly in filter mode, so you can type right away.
 
 | Key | Action |
 |-----|--------|
 | `j` `↓` `ctrl+n` | Move cursor down |
 | `k` `↑` `ctrl+p` | Move cursor up |
-| `/` | Enable filter mode |
+| `/` | Resume filter mode (after cancelling) |
 | `space` | Combine filter terms (same as `/`) |
 | `enter` | Raise selected Alacritty window |
 | `esc` | Quit; exit filter mode / cancel filter when filtering |
 | `backspace` | Delete character in filter |
-| `q` `Ctrl+C` | Quit (in filter mode, cancel filter) |
+| `q` `ctrl+c` | Quit (in filter mode, cancel filter) |
 
 `ctrl+n` moves down and `ctrl+p` moves up in all modes.
+
+In filter mode, `esc` cancels the filter and switches to navigation mode; `ctrl+c` in filter mode also cancels the filter.
 
 `space` combines filter terms only while filtering; in navigation mode it has no effect.
 
