@@ -18,9 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Windows in the UI are now sorted by most recently seen; windows without
   cached history keep the existing sort order ([#1]).
+- The picker now starts with the cursor on the window raised just before
+  the last one, by swapping the first two recency-sorted entries in the
+  display list ([#5]).
 
 ### Fixed
 
 - Cache scan now reads `accessed_at` as int64 ([#1]).
 
 [#1]: https://github.com/malikbenkirane/atty/issues/1
+[#5]: https://github.com/malikbenkirane/atty/issues/5
