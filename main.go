@@ -125,6 +125,10 @@ func run(ctx context.Context) (err error) {
 		return strings.Compare(a, b)
 	})
 
+	if len(m.windows) >= 2 {
+		m.windows[0], m.windows[1] = m.windows[1], m.windows[0]
+	}
+
 	m.filtering = true
 
 	var done bool
