@@ -26,10 +26,10 @@ func main() {
 
 const (
 	listScript  = `tell application "System Events" to get name of every window of process "Alacritty"`
-	raiseScript = `tell application "System Events" to tell process "Alacritty" to perform action "AXRaise" of (first window whose name contains %q)`
+	raiseScript = `tell application "System Events" to tell process "Alacritty" to perform action "AXRaise" of (first window whose name is %q)`
 	closeScript = `tell application "System Events"
 	    tell process "Alacritty"
-	        click (first button whose subrole is "AXCloseButton") of (first window whose name contains %q)
+	        click (first button whose subrole is "AXCloseButton") of (first window whose name is %q)
 	    end tell
 	end tell`
 )
