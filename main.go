@@ -19,7 +19,7 @@ import (
 
 func main() {
 	if err := run(context.Background()); err != nil {
-		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
@@ -38,6 +38,7 @@ func run(ctx context.Context) (err error) {
 
 	flagNoClose := flag.Bool("no-close", false, "do not close this window after rising selected window")
 	flagInfo := flag.Bool("info", false, "display info and exit")
+	flagTitle := flag.String("title", "", "raise the Alacritty window with this title and exit")
 
 	flag.Parse()
 
@@ -98,6 +99,31 @@ func run(ctx context.Context) (err error) {
 			}
 		}
 
+	}
+
+	if *flagTitle != "" {
+		wanted := *flagTitle
+		var found bool
+		for _, w := range m.windows {
+			if found = w == wanted; found {
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("no Alacritty window with title %q", wanted)
+		}
+		cmd := exec.Command("osascript", "-e", fmt.Sprintf(raiseScript, wanted))
+		cmd.Stderr = os.Stderr
+		cmd.Stdout = os.Stderr
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("osascript: %w", err)
+		}
+		if err := m.history.Log(wanted); err != nil {
+			return fmt.Errorf("history: log: %w", err)
+		}
+		dir, _ := os.Getwd()
+		setTitle(dir)
+		return nil
 	}
 
 	recents, err := m.history.MostRecent(len(m.windows))
