@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `-title` flag: raise the Alacritty window with the given title directly
+  and exit, without the interactive picker; exits non-zero with an error on
+  stderr when no window matches ([#12]).
 - SQLite access-history cache that logs raised windows to a database in the
   user's cache directory ([#1]).
 - `access_history` table and migrations tooling (goose/v3, go-sqlite
@@ -28,3 +31,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#1]: https://github.com/malikbenkirane/atty/issues/1
 [#5]: https://github.com/malikbenkirane/atty/issues/5
+[#12]: https://github.com/malikbenkirane/atty/issues/12
