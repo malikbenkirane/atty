@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -71,5 +72,21 @@ func TestCollapseHomeUsesRealHome(t *testing.T) {
 	want := "~/x/y"
 	if got != want {
 		t.Fatalf("collapseHome(%q) = %q, want %q", home+"/x/y", got, want)
+	}
+}
+
+func TestViewShowsCollapsedTitle(t *testing.T) {
+	home, err := os.UserHomeDir()
+	if err != nil || home == "" {
+		t.Skip("no home dir available")
+	}
+	m := model{windows: []string{"crush " + home + "/some/path"}}
+	out := m.View().Content
+	want := "crush ~/some/path"
+	if !strings.Contains(out, "> "+want) {
+		t.Fatalf("View() output does not contain cursor line with %q:\n%s", want, out)
+	}
+	if strings.Contains(out, home) {
+		t.Fatalf("View() leaks raw home path:\n%s", out)
 	}
 }
