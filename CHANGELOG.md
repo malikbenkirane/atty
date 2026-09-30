@@ -33,6 +33,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The picker now starts with the cursor on the window raised just before
   the last one, by swapping the first two recency-sorted entries in the
   display list ([`docs/issues/5.md`]).
+- Window titles in the picker now display a leading home directory as `~`;
+  `-title` matching, filtering, and history still use the original title
+  ([`docs/issues/17.md`]).
 
 ### Fixed
 
@@ -44,3 +47,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [`docs/issues/8.md`]: docs/issues/8.md
 [`docs/issues/9.md`]: docs/issues/9.md
 [`docs/issues/12.md`]: docs/issues/12.md
+[`docs/issues/17.md`]: docs/issues/17.md
