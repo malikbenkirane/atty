@@ -350,7 +350,7 @@ func (m model) View() tea.View {
 			fmt.Fprint(b, "  ")
 		}
 
-		fmt.Fprintln(b, m.windows[i])
+		fmt.Fprintln(b, collapseHome(m.windows[i]))
 
 	}
 	if len(v) == 0 {
