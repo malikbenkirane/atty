@@ -25,10 +25,10 @@ func main() {
 }
 
 const (
-	listScript  = `tell application "System Events" to get name of every window of process "Alacritty"`
-	raiseScript = `tell application "System Events" to tell process "Alacritty" to perform action "AXRaise" of (first window whose name is %q)`
+	listScript  = `tell application "System Events" to get name of every window of process "%s"`
+	raiseScript = `tell application "System Events" to tell process "%s" to perform action "AXRaise" of (first window whose name is %q)`
 	closeScript = `tell application "System Events"
-	    tell process "Alacritty"
+	    tell process "%s"
 	        click (first button whose subrole is "AXCloseButton") of (first window whose name is %q)
 	    end tell
 	end tell`
@@ -36,11 +36,14 @@ const (
 
 func run(ctx context.Context) (err error) {
 
+	flagTty := flag.String("tty", "Alacritty", "tty emulator")
 	flagNoClose := flag.Bool("no-close", false, "do not close this window after rising selected window")
 	flagInfo := flag.Bool("info", false, "display info and exit")
-	flagTitle := flag.String("title", "", "raise the Alacritty window with this title and exit")
+	flagTitle := flag.String("title", "", "raise the window with this title and exit")
 
 	flag.Parse()
+
+	tty := *flagTty
 
 	var m model
 
@@ -70,7 +73,9 @@ func run(ctx context.Context) (err error) {
 
 		buf := new(bytes.Buffer)
 
-		cmd := exec.Command("osascript", "-e", listScript)
+		script := fmt.Sprintf(listScript, tty)
+
+		cmd := exec.Command("osascript", "-e", script)
 		cmd.Stderr = os.Stderr
 		cmd.Stdout = buf
 
@@ -110,9 +115,9 @@ func run(ctx context.Context) (err error) {
 			}
 		}
 		if !found {
-			return fmt.Errorf("no Alacritty window with title %q", wanted)
+			return fmt.Errorf("no %s window with title %q", tty, wanted)
 		}
-		cmd := exec.Command("osascript", "-e", fmt.Sprintf(raiseScript, wanted))
+		cmd := exec.Command("osascript", "-e", fmt.Sprintf(raiseScript, tty, wanted))
 		cmd.Stderr = os.Stderr
 		cmd.Stdout = os.Stderr
 		if err := cmd.Run(); err != nil {
@@ -160,6 +165,8 @@ func run(ctx context.Context) (err error) {
 	var done bool
 	m.done = &done
 
+	m.tty = tty
+
 	p := tea.NewProgram(m)
 
 	if _, err := p.Run(); err != nil {
@@ -172,7 +179,7 @@ func run(ctx context.Context) (err error) {
 		return nil
 	}
 
-	cmd := exec.Command("osascript", "-e", fmt.Sprintf(closeScript, title))
+	cmd := exec.Command("osascript", "-e", fmt.Sprintf(closeScript, tty, title))
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stderr
 	if err := cmd.Run(); err != nil {
@@ -183,6 +190,7 @@ func run(ctx context.Context) (err error) {
 }
 
 type model struct {
+	tty        string
 	windows    []string
 	cursor     int
 	filtering  bool
@@ -292,7 +300,7 @@ func (m model) updateCursor(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 }
 func (m model) raiseAndExit() (tea.Model, tea.Cmd) {
 	title := m.windows[m.cursor]
-	cmd := exec.Command("osascript", "-e", fmt.Sprintf(raiseScript, title))
+	cmd := exec.Command("osascript", "-e", fmt.Sprintf(raiseScript, m.tty, title))
 	if err := m.history.Log(title); err != nil {
 		m.err = fmt.Errorf("history: log: %w", err)
 		return m, nil
